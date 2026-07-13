@@ -1,0 +1,36 @@
+name: "lakehouse"
+version: "1.0.0"
+config-version: 2
+
+profile: "lakehouse"
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+# Staging (silver) models are lightweight views over raw; marts (gold) are
+# materialized as Snappy Parquet tables so downstream queries scan columnar
+# data instead of re-reading the seed each time.
+models:
+  lakehouse:
+    staging:
+      +materialized: view
+      +schema: null
+    marts:
+      +materialized: table
+      +format: parquet
+      +write_compression: snappy
+
+seeds:
+  lakehouse:
+    raw_orders:
+      +column_types:
+        order_id: bigint
+        customer_id: bigint
+        order_date: string
+        product_category: string
+        quantity: int
+        unit_price: double
+        country: string

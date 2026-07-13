@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_orders
+    description: "Silver layer: typed, cleaned order lines with a computed line_total."
+    columns:
+      - name: order_id
+        description: "Primary key of an order line."
+        data_tests:
+          - not_null
+          - unique
+      - name: product_category
+        description: "Lower-cased product category."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["electronics", "apparel", "home", "grocery", "toys", "books"]
+      - name: country
+        description: "Upper-cased ISO-ish country code."
+        data_tests:
+          - not_null
+          - accepted_values:
+              values: ["US", "CA", "GB", "DE", "AU"]
+      - name: line_total
+        description: "quantity * unit_price, rounded to cents."
+        data_tests:
+          - not_null

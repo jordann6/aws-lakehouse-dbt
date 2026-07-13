@@ -1,0 +1,50 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  terraform:
+    name: Terraform fmt + validate (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+      - run: terraform -chdir=terraform fmt -check -recursive
+      - run: terraform -chdir=terraform init -backend=false
+      - run: terraform -chdir=terraform validate
+
+  dbt:
+    name: dbt compile (blocking)
+    runs-on: ubuntu-latest
+    # Env vars are dummies: `dbt parse` compiles the DAG and renders the
+    # profile without opening a warehouse connection.
+    env:
+      DBT_ATHENA_REGION: us-east-1
+      DBT_ATHENA_SCHEMA: ci
+      DBT_ATHENA_WORKGROUP: ci
+      DBT_ATHENA_S3_STAGING: s3://ci/staging/
+      DBT_ATHENA_S3_DATA: s3://ci/data/
+      DBT_PROFILES_DIR: dbt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install "dbt-athena-community==1.9.*"
+      - name: dbt parse (compiles models + tests)
+        run: dbt parse --project-dir dbt
+
+  shell:
+    name: Shellcheck (blocking)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          sudo apt-get update && sudo apt-get install -y shellcheck
+          shellcheck --severity=warning scripts/*.sh

@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: category_revenue
+    description: "Gold: revenue and order counts by product category and country."
+    columns:
+      - name: revenue
+        data_tests:
+          - not_null
+      - name: order_count
+        data_tests:
+          - not_null
+
+  - name: daily_revenue
+    description: "Gold: one row per day with revenue and average order value."
+    columns:
+      - name: order_date
+        data_tests:
+          - not_null
+          - unique

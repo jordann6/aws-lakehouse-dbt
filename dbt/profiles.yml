@@ -1,0 +1,14 @@
+# Connection is fully driven by env vars exported from terraform outputs
+# (see scripts/demo.sh), so nothing environment-specific is committed.
+lakehouse:
+  target: dev
+  outputs:
+    dev:
+      type: athena
+      s3_staging_dir: "{{ env_var('DBT_ATHENA_S3_STAGING') }}"
+      s3_data_dir: "{{ env_var('DBT_ATHENA_S3_DATA') }}"
+      region_name: "{{ env_var('DBT_ATHENA_REGION') }}"
+      database: awsdatacatalog
+      schema: "{{ env_var('DBT_ATHENA_SCHEMA') }}"
+      work_group: "{{ env_var('DBT_ATHENA_WORKGROUP') }}"
+      threads: 4
